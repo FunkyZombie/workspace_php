@@ -1,11 +1,10 @@
-<?php
+<?php 
+$thisArr = array(4, 5, 1, 4, 7, 8, 15, 6, 71, 45, 2);
 
-$arr1 = range(2, 11);
-$arr2 = range(16, 25);
-$result = array();
+$oddOrEven = function(int $number) :bool {
+  return $number % 2 === 0;
+};
 
-foreach ($arr1 as $k => $v) {
-  $result[] = $arr1[$k] * $arr2[$k];
-}
+$newArr = array_map($oddOrEven, $thisArr);
 
-print_r($result);
+print_r($newArr);
