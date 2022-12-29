@@ -1,10 +1,13 @@
-<?php 
-$thisArr = array(4, 5, 1, 4, 7, 8, 15, 6, 71, 45, 2);
+<?php
 
-$oddOrEven = function(int $number) :bool {
-  return $number % 2 === 0;
-};
+include_once "User.php";
+include_once "Task.php";
+include_once "Comment.php";
+include_once "TaskService.php";
 
-$newArr = array_map($oddOrEven, $thisArr);
+$user = new User('test.email', 'Alice');
+$task = new Task($user, 'Вербовать улиток', 2);
 
-print_r($newArr);
+TaskService::addComment($user, $task, 'Firs comment');
+
+print_r($task);
