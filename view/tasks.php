@@ -14,23 +14,37 @@
 </header>
 <main>
     <div class="wrap tasks-wrap">
-        <?php if($tasks !== null) : ?>
-            <?php foreach ($tasks as $task):?>
+        <h3>В процессе:</h3>
+        <?php if($tasks !== null): ?>
+            <?php foreach ($tasks as $task): ?>
+                    <div class="tasks-item">
+                        <div><p class="task-title"><?=$task->getDescription()?></p></div>
+                        <div>
+                            <a href="/?controller=tasks&action=delete&taskId=<?=$task->getId()?>" class="task-link delete">Delete</a>
+                            <a href="/?controller=tasks&action=isdone&taskId=<?=$task->getId()?>" class="task-link isdone">Готово</a>
+                        </div>
+                    </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div><p>Здесь ничего нет :(</p></div>
+        <?php endif; ?>
+        <form method="post" class="task-form">
+            <input type="text" name="task" placeholder="Задача" class="task-input">
+            <input type="submit" value="Add Task" class="addtask">
+        </form>
+    </div>
+
+    <div class="wrap tasks-wrap">
+        <h3>Завершенные задачи:</h3>
+        <?php if($tasksDone !== null):?>
+            <?php foreach ($tasksDone as $task):?>
                 <div class="tasks-item">
                     <div><p class="task-title"><?=$task->getDescription()?></p></div>
-                    <div>
-                        <a href="#" class="task-link delete">Delete</a>
-                        <a href="#" class="task-link isdone">Готово</a>
-                    </div>
                 </div>
             <?php endforeach;?>
         <?php else :?>
             <div><p>Здесь ничего нет :(</p></div>
         <?php endif;?>
-        <form method="post" class="task-form">
-            <input type="text" name="task" placeholder="Задача" class="task-input">
-            <input type="submit" value="Add Task" class="addtask">
-        </form>
     </div>
 </main>
 </body>

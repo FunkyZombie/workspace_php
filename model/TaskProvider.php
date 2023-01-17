@@ -2,31 +2,74 @@
 
 require_once 'Task.php';
 
-class TaskProvider {
-  private Array $tasks = [];
+class TaskProvider 
+{
+  private Array $tasks;
+  private Array $undoneTasks;
+  private PDO $pdo;
 
-  public function getUndoneList():Array 
+  function __construct(PDO $pdo)
   {
-      return $this->tasks;
+    $this->pdo = $pdo;
+    $this->tasks = [];
+    $this->undoneTasks = [];
   }
 
-  private function addTaskOnSession(string $id, $tasks):void 
+  public function getDoneList($userId): ?Array 
   {
-    $_SESSION['tasks'][$id] = $tasks;
-  }
+    $statement = $this->pdo->prepare(
+      "SELECT id, description, isDone  FROM tasks WHERE userId = :userId AND isDone = 1;"
+    );
 
-  public function addTask(string $user, string $description):void 
-  {
-    $id = uniqid();
-    $task = new Task($user, $description, $id);
-    $this->addTaskOnSession($id, $task);
-    // $this->tasks[$id] = $task;
-  }
+    $statement->execute([
+      ':userId' => $userId
+    ]);
 
-  public function getTaskOfSession():void 
-  {
-    if (isset($_SESSION["tasks"])) {
-      $this->tasks = $_SESSION["tasks"];
+    while ($row = $statement->fetchObject()) {
+      $this->undoneTasks[] = new Task($row->description, $row->id, $row->isDone);
     }
+
+    return $this->undoneTasks ?: null;
+  }
+
+  public function fetchTasks($userId): ?Array
+  {
+    $statement = $this->pdo->prepare(
+      "SELECT id, description, isDone  FROM tasks WHERE userId = :userId AND isDone = 0;"
+    );
+
+    $statement->execute([
+      ':userId' => $userId
+    ]);
+
+    while ($row = $statement->fetchObject()) {
+      $this->tasks[] = new Task($row->description, $row->id, $row->isDone);
+    }
+
+    return $this->tasks ?: null;
+  }
+
+  public function addTask(Task $task):bool 
+  {
+    $statement = $this->pdo->prepare(
+      'INSERT INTO tasks (userId, description, isDone) VALUES (:userId, :description, :isDone)'
+    );
+
+    return $statement->execute([
+      'userId' => $_SESSION['userId'],
+      'description' => $task->getDescription(),
+      'isDone' => 0,
+    ]);
+  }
+
+  public function setIsDone($id)
+  {
+    $statement = $this->pdo->prepare(
+      'UPDATE tasks SET isDone = 1 WHERE id = :id;'
+    );
+
+    return $statement->execute([
+      'id' => $id,
+    ]);
   }
 }

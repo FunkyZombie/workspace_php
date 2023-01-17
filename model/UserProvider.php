@@ -4,21 +4,42 @@ require_once 'User.php';
 
 class UserProvider
 {
-    private array $accounts = [
-        'admin' => '123',
-        'FunkyMonk' => 'qwerty'
-    ];
+    private PDO $pdo;
+
+    public function __construct(PDO $pdo)
+    {
+        $this->pdo = $pdo;
+    }
+
+    public function registerUser(User $user, string $password)
+    {
+        $isExistedStatement = $this->pdo->prepare('SELECT id FROM users WHERE username = ?');
+        $isExistedStatement->execute([$user->getUsername()]);
+        if ($isExistedStatement->fetch()) {
+            throw new Error('Такой пользователь уже существует');
+        }
+
+        $statement = $this->pdo->prepare(
+            'INSERT INTO users (username, password) VALUES (:username, :password)'
+        );
+
+        $statement->execute([
+            'username' => $user->getUsername(),
+            'password' => md5($password)
+        ]);
+        return $this->pdo->lastInsertId();
+    }
 
     public function getByUsernameAndPassword(string $username, string $password): ?User
     {
-        $expectedPassword = $this->accounts[$username] ?? null;
-        if ($expectedPassword === $password) {
-            return new User($username);
-        }
-
-        return null;
-
+        $statement = $this->pdo->prepare(
+            'SELECT id, username FROM users WHERE username = :username AND password = :password LIMIT 1'
+        );
+        
+        $statement->execute([
+            'username' => $username,
+            'password' => md5($password)
+        ]);
+        return $statement->fetchObject(User::class, [$username]) ?: null;
     }
-
-
 }
